@@ -1,13 +1,23 @@
 import hashlib
-from fastapi import FastAPI, Response, status
+import datetime
+from fastapi import FastAPI, Response, status, Request
+from typing import Optional
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 app.counter = 0
+app.id=0
+app.records={}
 
 
 class HelloResp(BaseModel):
     msg:str
+
+class InputJSON(BaseModel):
+    name:str
+    surname:str
+
 
 @app.get("/")
 def root():
@@ -32,6 +42,38 @@ async def hashver(password:str, password_hash:str):
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+
+@app.post("/register")
+async def register_reciver(inputJSON: InputJSON):
+    app.id+=1
+
+    now=datetime.datetime.today()
+    delta=len(inputJSON.name+inputJSON.surname)
+    nxt = now+datetime.timedelta(days=delta)
+    now = str(now.year)+"-"+str(now.month).rjust(2,'0')+"-"+str(now.day).rjust(2,'0')
+    nxt =str(nxt.year)+"-"+str(nxt.month).rjust(2,'0')+"-"+str(nxt.day).rjust(2,'0')
+
+    app.records[id]={"id":app.id, 
+    "name":inputJSON.name,
+    "surname":inputJSON.surname,
+    "register_date": now,
+    "vaccination_date": nxt}
+
+    return JSONResponse(content={"id":app.id, 
+    "name":inputJSON.name,
+    "surname":inputJSON.surname,
+    "register_date": now,
+    "vaccination_date": nxt}, status_code=status.HTTP_201_CREATED)
+
+@app.get("/patient/{id}")
+async def access_record(inid: int):
+    if inid<1:
+        return Response(status_code=status.HTTP_400_BAD_REQUEST)
+    elif  inid in app.records:
+        return JSONResponse(content=app.records[inid], status_code=status.HTTP_200_OK)
+    else:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
+
 # @app.get("/hello/{name}", response_model=HelloResp)
 # async def read_item(name: str):
 #     return HelloResp(msg=f"Hello {name}")
