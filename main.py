@@ -66,7 +66,7 @@ async def register_reciver(inputJSON: InputJSON):
     now = str(now.year)+"-"+str(now.month).rjust(2,'0')+"-"+str(now.day).rjust(2,'0')
     nxt =str(nxt.year)+"-"+str(nxt.month).rjust(2,'0')+"-"+str(nxt.day).rjust(2,'0')
 
-    app.records[id]={"id":app.id, 
+    app.records[app.id]={"id":app.id, 
     "name":inputJSON.name,
     "surname":inputJSON.surname,
     "register_date": now,
