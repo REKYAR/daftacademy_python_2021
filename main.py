@@ -78,9 +78,11 @@ async def register_reciver(inputJSON: InputJSON):
     "register_date": now,
     "vaccination_date": nxt}, status_code=status.HTTP_201_CREATED)
 
-@app.get("/patient/{id}")
-async def access_record(inid: str):
+@app.get("/patient/{inid}")
+async def access_record(inid):
     inid =int(inid)
+    print((inid, type(inid)))
+    print(app.records)
     if inid<1:
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
     elif  inid in app.records:
