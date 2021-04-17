@@ -31,8 +31,21 @@ async def getres():
 @app.post("/method", status_code=201)
 async def getres():
     return {"method":"POST"}
+#zrobić dla geta
+# @app.post("/auth")
+# async def hashver(password:str, password_hash:str):
+#     if (not password)or(not password_hash):
+#         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+#     print(hashlib.sha512(password.replace("\n","").strip().encode('utf-8')))
+#     if hashlib.sha512(password.replace("\n","").strip().encode('utf-8')).hexdigest()==password_hash:
+        
+#         return Response(status_code=status.HTTP_204_NO_CONTENT)
+#     else:
+#         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
-@app.post("/auth")
+
+
+@app.get("/auth")
 async def hashver(password:str, password_hash:str):
     if (not password)or(not password_hash):
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
@@ -66,7 +79,8 @@ async def register_reciver(inputJSON: InputJSON):
     "vaccination_date": nxt}, status_code=status.HTTP_201_CREATED)
 
 @app.get("/patient/{id}")
-async def access_record(inid: int):
+async def access_record(inid: str):
+    inid =int(inid)
     if inid<1:
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
     elif  inid in app.records:
