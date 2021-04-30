@@ -1,12 +1,14 @@
 import hashlib
 import datetime
-from fastapi import FastAPI, Response, status, Request
+from fastapi import FastAPI, Response, status, Request, Depends, Cookie
 from typing import Optional
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 app = FastAPI()
+security = HTTPBasic()
 templates = Jinja2Templates(directory="templates")
 app.counter = 0
 app.id=0
@@ -107,3 +109,25 @@ async def helloer(request: Request):
     now=datetime.datetime.today()
     now = str(now.year)+"-"+str(now.month).rjust(2,'0')+"-"+str(now.day).rjust(2,'0')
     return templates.TemplateResponse("ninja21.html.j2", {"request": request, "now":now})
+
+
+@app.post("/login_session")
+async def establish_session(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
+    l="4dm1n"
+    p="NotSoSecurePa$$"
+    if  l == credentials.username and credentials.password==p:
+        #return Response(status_code=status.HTTP_202_ACCEPTED)
+        response.set_cookie(key="session_token", value="rather epic content of session cookie")
+    else:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+
+
+@app.post("/login_token")
+async def give_cookie(credentials: HTTPBasicCredentials = Depends(security), session_token: str = Cookie(None)):
+    l="4dm1n"
+    p="NotSoSecurePa$$"
+    if  l == credentials.username and credentials.password==p:
+        #return Response(status_code=status.HTTP_202_ACCEPTED)
+        return JSONResponse(content={"token": session_token})
+    else:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
