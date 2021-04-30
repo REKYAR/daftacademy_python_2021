@@ -119,7 +119,7 @@ async def establish_session(response: Response, credentials: HTTPBasicCredential
         #return Response(status_code=status.HTTP_202_ACCEPTED)
         response.set_cookie(key="session_token", value="rather epic content of session cookie")
     else:
-        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED, status_code=status.HTTP_201_CREATED)
 
 
 @app.post("/login_token")
