@@ -3,9 +3,11 @@ import datetime
 from fastapi import FastAPI, Response, status, Request
 from typing import Optional
 from pydantic import BaseModel
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
+templates = Jinja2Templates(directory="templates")
 app.counter = 0
 app.id=0
 app.records={}
@@ -99,3 +101,9 @@ async def access_record(inid):
 # def counter():
 #     app.counter += 1
 #     return app.counter
+
+@app.get("/hello", response_class=HTMLResponse)
+async def helloer(request: Request):
+    now=datetime.datetime.today()
+    now = str(now.year)+"-"+str(now.month).rjust(2,'0')+"-"+str(now.day).rjust(2,'0')
+    return templates.TemplateResponse("ninja21.html.j2", {"request": request, "now":now})
