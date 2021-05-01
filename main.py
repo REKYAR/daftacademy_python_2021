@@ -1,6 +1,6 @@
-import hashlib
+from hashlib import sha256
 import datetime
-from fastapi import FastAPI, Response, status, Request, Depends, Cookie
+from fastapi import FastAPI, Response, status, Request, Depends, Cookie, HTTPException
 from typing import Optional
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
@@ -13,7 +13,9 @@ templates = Jinja2Templates(directory="templates")
 app.counter = 0
 app.id=0
 app.records={}
-
+app.secret_key = "placeholder secret"
+app.access_tokens = []
+app.token_values=[]
 
 class HelloResp(BaseModel):
     msg:str
@@ -94,15 +96,6 @@ async def access_record(inid):
     else:
         return Response(status_code=status.HTTP_404_NOT_FOUND)
 
-# @app.get("/hello/{name}", response_model=HelloResp)
-# async def read_item(name: str):
-#     return HelloResp(msg=f"Hello {name}")
-
-
-# @app.get('/counter')
-# def counter():
-#     app.counter += 1
-#     return app.counter
 
 @app.get("/hello", response_class=HTMLResponse)
 async def helloer(request: Request):
@@ -115,24 +108,24 @@ async def helloer(request: Request):
 async def establish_session(request:Request,response: Response, credentials: HTTPBasicCredentials = Depends(security)):
     l="4dm1n"
     p="NotSoSecurePa$$"
-    print(request.cookies)
     if  l == credentials.username and credentials.password==p:
         #return Response(status_code=status.HTTP_202_ACCEPTED)
-        response.set_cookie(key="session_token", value="rather epic content of session cookie")
+        session_token=sha256(f"{app.secret_key}{credentials.username}{credentials.password}".encode()).hexdigest()
+        app.access_tokens.append(session_token)
+        response.set_cookie(key="session_token", value=session_token)
         response.status_code=status.HTTP_201_CREATED
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED )
 
 
 @app.post("/login_token")
-async def give_cookie(request:Request,response: Response, credentials: HTTPBasicCredentials = Depends(security), session_token: str = Cookie(None)):
+async def give_cookie(response: Response, session_token: str = Cookie(None)):
     l="4dm1n"
     p="NotSoSecurePa$$"
-    #print(request.cookies)
-    if  l == credentials.username and credentials.password==p:
-        #return Response(status_code=status.HTTP_202_ACCEPTED)
-        response.set_cookie(key="session_token", value="rather epic content of session cookie")
-        return JSONResponse(content={"token": session_token}, status_code= status.HTTP_201_CREATED)
+    if  session_token in app.access_tokens:
+        token_value=sha256(f"{app.secret_key}{session_token}".encode()).hexdigest()
+        app.token_values.append(token_value)
+        return JSONResponse(content={"token": token_value}, status_code= status.HTTP_201_CREATED)
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
