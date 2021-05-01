@@ -139,7 +139,7 @@ async def give_cookie(request:Request,response: Response, credentials: HTTPBasic
 
 
 @app.get("/welcome_session")
-async def welcome_sessioner( request:Request,  session_token: str = Cookie(None), format:Optional[str]=None):
+async def welcome_sessioner( request:Request,response: Response,  session_token: str = Cookie(None), format:Optional[str]=None):
     #print(session_token)
     #print(format)
     #print(request.cookies)
@@ -157,7 +157,7 @@ async def welcome_sessioner( request:Request,  session_token: str = Cookie(None)
 
 
 @app.get("/welcome_token")
-async def welcome_tokener(token:str, format:Optional[str]=None):
+async def welcome_tokener(response: Response, token:str, format:Optional[str]=None):
     if token=="rather epic content of session cookie":
         response.set_cookie(key="session_token", value="rather epic content of session cookie")
         if format=="json":
