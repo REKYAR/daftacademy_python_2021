@@ -112,9 +112,10 @@ async def helloer(request: Request):
 
 
 @app.post("/login_session")
-async def establish_session(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
+async def establish_session(request:Request,response: Response, credentials: HTTPBasicCredentials = Depends(security)):
     l="4dm1n"
     p="NotSoSecurePa$$"
+    print(request.cookies)
     if  l == credentials.username and credentials.password==p:
         #return Response(status_code=status.HTTP_202_ACCEPTED)
         response.set_cookie(key="session_token", value="rather epic content of session cookie")
@@ -124,11 +125,13 @@ async def establish_session(response: Response, credentials: HTTPBasicCredential
 
 
 @app.post("/login_token")
-async def give_cookie(credentials: HTTPBasicCredentials = Depends(security), session_token: str = Cookie(None)):
+async def give_cookie(request:Request,response: Response, credentials: HTTPBasicCredentials = Depends(security), session_token: str = Cookie(None)):
     l="4dm1n"
     p="NotSoSecurePa$$"
+    #print(request.cookies)
     if  l == credentials.username and credentials.password==p:
         #return Response(status_code=status.HTTP_202_ACCEPTED)
+        response.set_cookie(key="session_token", value="rather epic content of session cookie")
         return JSONResponse(content={"token": session_token}, status_code= status.HTTP_201_CREATED)
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
@@ -136,10 +139,12 @@ async def give_cookie(credentials: HTTPBasicCredentials = Depends(security), ses
 
 
 @app.get("/welcome_session")
-async def welcome_sessioner( format:Optional[str]=None, session_token: str = Cookie(None)):
-    print(session_token)
-    print(format)
+async def welcome_sessioner( request:Request,  session_token: str = Cookie(None), format:Optional[str]=None):
+    #print(session_token)
+    #print(format)
+    #print(request.cookies)
     if session_token=="rather epic content of session cookie":
+        response.set_cookie(key="session_token", value="rather epic content of session cookie")
         if format=="json":
             return JSONResponse(content={"message": "Welcome!"})
         elif format=="html":
@@ -154,6 +159,7 @@ async def welcome_sessioner( format:Optional[str]=None, session_token: str = Coo
 @app.get("/welcome_token")
 async def welcome_tokener(token:str, format:Optional[str]=None):
     if token=="rather epic content of session cookie":
+        response.set_cookie(key="session_token", value="rather epic content of session cookie")
         if format=="json":
             return JSONResponse(content={"message": "Welcome!"})
         elif format=="html":
