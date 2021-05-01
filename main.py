@@ -3,7 +3,7 @@ import datetime
 from fastapi import FastAPI, Response, status, Request, Depends, Cookie
 from typing import Optional
 from pydantic import BaseModel
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
@@ -130,5 +130,35 @@ async def give_cookie(credentials: HTTPBasicCredentials = Depends(security), ses
     if  l == credentials.username and credentials.password==p:
         #return Response(status_code=status.HTTP_202_ACCEPTED)
         return JSONResponse(content={"token": session_token}, status_code= status.HTTP_201_CREATED)
+    else:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+
+
+
+@app.get("/welcome_session")
+async def welcome_sessioner( format:Optional[str]=None, session_token: str = Cookie(None)):
+    print(session_token)
+    print(format)
+    if session_token=="rather epic content of session cookie":
+        if format=="json":
+            return JSONResponse(content={"message": "Welcome!"})
+        elif format=="html":
+            return HTMLResponse(content="<h1>Welcome!</h1>",)
+        else:
+            return PlainTextResponse(content="Welcome!")
+    else:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+
+
+
+@app.get("/welcome_token")
+async def welcome_tokener(token:str, format:Optional[str]=None):
+    if token=="rather epic content of session cookie":
+        if format=="json":
+            return JSONResponse(content={"message": "Welcome!"})
+        elif format=="html":
+            return HTMLResponse(content="<h1>Welcome!</h1>",)
+        else:
+            return PlainTextResponse(content="Welcome!")
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
