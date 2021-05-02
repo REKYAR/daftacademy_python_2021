@@ -125,7 +125,8 @@ async def give_cookie(response: Response, session_token: str = Cookie(None)):
     if  session_token in app.access_tokens:
         token_value=sha256(f"{app.secret_key}{session_token}".encode()).hexdigest()
         app.token_values.append(token_value)
-        return JSONResponse(content={"token": token_value}, status_code= status.HTTP_201_CREATED)
+        response.set_cookie(key="token_value", value=token_value)
+        return JSONResponse(content={"token": session_token}, status_code= status.HTTP_201_CREATED)
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
