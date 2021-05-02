@@ -131,12 +131,11 @@ async def give_cookie(response: Response, session_token: str = Cookie(None),toke
 
 
 @app.get("/welcome_session")
-async def welcome_sessioner( request:Request,response: Response,  session_token: str = Cookie(None), format:Optional[str]=None):
+async def welcome_sessioner(response: Response,  session_token: str = Cookie(None), format:Optional[str]=None):
     #print(session_token)
     #print(format)
     #print(request.cookies)
-    if session_token=="rather epic content of session cookie":
-        response.set_cookie(key="session_token", value="rather epic content of session cookie")
+    if session_token in app.access_tokens:
         if format=="json":
             return JSONResponse(content={"message": "Welcome!"})
         elif format=="html":
@@ -150,8 +149,7 @@ async def welcome_sessioner( request:Request,response: Response,  session_token:
 
 @app.get("/welcome_token")
 async def welcome_tokener(response: Response, token:str, format:Optional[str]=None):
-    if token=="rather epic content of session cookie":
-        response.set_cookie(key="session_token", value="rather epic content of session cookie")
+    if token in app.access_tokens:
         if format=="json":
             return JSONResponse(content={"message": "Welcome!"})
         elif format=="html":
