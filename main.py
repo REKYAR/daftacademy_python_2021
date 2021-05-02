@@ -119,10 +119,8 @@ async def establish_session(request:Request,response: Response, credentials: HTT
 
 
 @app.post("/login_token")
-async def give_cookie(response: Response, session_token: str = Cookie(None)):
-    l="4dm1n"
-    p="NotSoSecurePa$$"
-    if  session_token in app.access_tokens:
+async def give_cookie(response: Response, session_token: str = Cookie(None),token_value: Optional[str]=Cookie(None)):
+    if  session_token in app.access_tokens or token_value in app.token_values:
         token_value=sha256(f"{app.secret_key}{session_token}".encode()).hexdigest()
         app.token_values.append(token_value)
         response.set_cookie(key="token_value", value=token_value)
