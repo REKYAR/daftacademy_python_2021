@@ -3,7 +3,7 @@ import datetime
 from fastapi import FastAPI, Response, status, Request, Depends, Cookie, HTTPException
 from typing import Optional
 from pydantic import BaseModel
-from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
@@ -109,9 +109,10 @@ async def establish_session(request:Request,response: Response, credentials: HTT
     l="4dm1n"
     p="NotSoSecurePa$$"
     if  l == credentials.username and credentials.password==p:
-        #return Response(status_code=status.HTTP_202_ACCEPTED)
-        session_token=sha256(f"{app.secret_key}{credentials.username}{credentials.password}".encode()).hexdigest()
+        session_token=sha256(f"{app.secret_key}{credentials.username}{credentials.password}{datetime.datetime.today()}".encode()).hexdigest()
         app.access_tokens.append(session_token)
+        if len(app.access_tokens) ==4:
+            app.access_tokens= app.access_tokens[1:]
         response.set_cookie(key="session_token", value=session_token)
         response.status_code=status.HTTP_201_CREATED
     else:
@@ -119,12 +120,15 @@ async def establish_session(request:Request,response: Response, credentials: HTT
 
 
 @app.post("/login_token")
-async def give_cookie(response: Response, session_token: str = Cookie(None),token_value: Optional[str]=Cookie(None)):
-    if  session_token in app.access_tokens or token_value in app.token_values:
-        token_value=sha256(f"{app.secret_key}{session_token}".encode()).hexdigest()
+async def give_cookie(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
+    l="4dm1n"
+    p="NotSoSecurePa$$"
+    if  l == credentials.username and credentials.password==p:
+        token_value=sha256(f"{app.secret_key}{credentials.username}{credentials.password}{datetime.datetime.today()}".encode()).hexdigest()
         app.token_values.append(token_value)
-        response.set_cookie(key="token_value", value=token_value)
-        return JSONResponse(content={"token": session_token}, status_code= status.HTTP_201_CREATED)
+        if len(app.token_values)==4:
+            app.token_values= app.token_values[1:]
+        return JSONResponse(content={"token": token_value}, status_code= status.HTTP_201_CREATED)
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
@@ -149,7 +153,7 @@ async def welcome_sessioner(response: Response,  session_token: str = Cookie(Non
 
 @app.get("/welcome_token")
 async def welcome_tokener(response: Response, token:str, format:Optional[str]=None):
-    if token in app.access_tokens:
+    if token in app.token_values:
         if format=="json":
             return JSONResponse(content={"message": "Welcome!"})
         elif format=="html":
@@ -158,3 +162,35 @@ async def welcome_tokener(response: Response, token:str, format:Optional[str]=No
             return PlainTextResponse(content="Welcome!")
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+
+
+@app.delete("/logout_session")
+async def logout_sessioner(response: Response,  session_token: str = Cookie(None), format:Optional[str]=None):
+
+    if session_token in app.access_tokens:
+        app.access_tokens.remove[session_token]
+        return RedirectResponse("https://daftacademy-initial.herokuapp.com/logged_out", status_code=status.HTTP_302_FOUND)
+    else:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+
+
+
+@app.delete("/logout_token")
+async def logout_tokener(response: Response, token:str, format:Optional[str]=None):
+    if token in app.token_values:
+        app.token_values.remove[token]
+        return RedirectResponse("https://daftacademy-initial.herokuapp.com/logged_out", status_code=status.HTTP_302_FOUND)
+    else:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+
+
+
+@app.get("/logged_out")
+async def logout_logout(response: Response, format:Optional[str]=None):
+    if format=="json":
+            return JSONResponse(content={"message": "Logged out!"})
+    elif format=="html":
+            return HTMLResponse(content="<h1>Logged out!</h1>")
+    else:
+            return PlainTextResponse(content="Logged out!")
+
