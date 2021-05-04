@@ -169,8 +169,8 @@ async def logout_sessioner(response: Response,  session_token: str = Cookie(None
 
     if session_token in app.access_tokens:
         app.access_tokens.remove(session_token)
-        path =f'https://daftacademy-initial.herokuapp.com/logged_out/{format}'
-        return RedirectResponse(url=path, status_code=status.HTTP_303_SEE_OTHER)
+        path =f'/logged_out?format={format}'
+        return RedirectResponse(url=path, status_code=status.HTTP_302_FOUND)
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
@@ -180,8 +180,8 @@ async def logout_sessioner(response: Response,  session_token: str = Cookie(None
 async def logout_tokener(response: Response, token:str, format:Optional[str]=None):
     if token in app.token_values:
         app.token_values.remove(token)
-        path =f'https://daftacademy-initial.herokuapp.com/logged_out/{format}'
-        return RedirectResponse(url=path, status_code=status.HTTP_303_SEE_OTHER)
+        path =f'/logged_out?format={format}'
+        return RedirectResponse(url=path, status_code=status.HTTP_302_FOUND)
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
