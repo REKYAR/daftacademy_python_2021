@@ -170,7 +170,7 @@ async def logout_sessioner(response: Response,  session_token: str = Cookie(None
     if session_token in app.access_tokens:
         app.access_tokens.remove(session_token)
         path =f'https://daftacademy-initial.herokuapp.com/logged_out/{format}'
-        return RedirectResponse(path, status_code=status.HTTP_302_FOUND)
+        return RedirectResponse(url=path, status_code=status.HTTP_303_SEE_OTHER)
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
@@ -181,14 +181,25 @@ async def logout_tokener(response: Response, token:str, format:Optional[str]=Non
     if token in app.token_values:
         app.token_values.remove(token)
         path =f'https://daftacademy-initial.herokuapp.com/logged_out/{format}'
-        return RedirectResponse(path, status_code=status.HTTP_302_FOUND)
+        return RedirectResponse(url=path, status_code=status.HTTP_303_SEE_OTHER)
     else:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
 
+@app.delete("/logged_out")
+async def logout_synthetic(response: Response, format:Optional[str]=None):
+    response.status_code=status.HTTP_200_OK
+    if format=="json":
+            return JSONResponse(content={"message": "Logged out!"})
+    elif format=="html":
+            return HTMLResponse(content="<h1>Logged out!</h1>")
+    else:
+            return PlainTextResponse(content="Logged out!")
+
 
 @app.get("/logged_out")
 async def logout_logout(response: Response, format:Optional[str]=None):
+    response.status_code=status.HTTP_200_OK
     if format=="json":
             return JSONResponse(content={"message": "Logged out!"})
     elif format=="html":
