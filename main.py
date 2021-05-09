@@ -229,7 +229,7 @@ async def query_custs():
     with sqlite3.connect("northwind.db") as connection:
         connection.text_factory = lambda b: b.decode(errors="ignore")
         cursor = connection.cursor()
-        products = cursor.execute("SELECT CustomerID,CompanyName,Address,PostalCode,City,Country FROM Customers").fetchall()
+        products = cursor.execute("SELECT CustomerID,CompanyName,Address,PostalCode,City,Country FROM Customers ORDER BY CustomerID ASC").fetchall()
     for result in products:
             d={}
             table.append({"id":result[0], "name":result[1], "full_address":str(result[2])+str(result[3])+str(result[4])+str(result[5])})
