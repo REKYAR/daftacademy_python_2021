@@ -232,5 +232,5 @@ async def query_custs():
         products = cursor.execute("SELECT CustomerID,CompanyName,Address,PostalCode,City,Country FROM Customers ORDER BY CustomerID ASC").fetchall()
     for result in products:
             d={}
-            table.append({"id":result[0], "name":result[1], "full_address":str(result[2])+str(result[3])+str(result[4])+str(result[5])})
+            table.append({"id":result[0], "name":result[1], "full_address":str(result[2])+" "+str(result[3])+" "+str(result[4])+" "+str(result[5])})
     return JSONResponse(content={"categories":table}, status_code=status.HTTP_200_OK)
